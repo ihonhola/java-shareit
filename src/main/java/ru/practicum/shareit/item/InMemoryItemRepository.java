@@ -33,15 +33,9 @@ public class InMemoryItemRepository {
 
         Item existingItem = items.get(itemId);
 
-        if (item.getName() != null) {
-            existingItem.setName(item.getName());
-        }
-        if (item.getDescription() != null) {
-            existingItem.setDescription(item.getDescription());
-        }
-        if (item.getAvailable() != null) {
-            existingItem.setAvailable(item.getAvailable());
-        }
+        existingItem.setName(item.getName());
+        existingItem.setDescription(item.getDescription());
+        existingItem.setAvailable(item.getAvailable());
 
         items.put(itemId, existingItem);
         return existingItem;

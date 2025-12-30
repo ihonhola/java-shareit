@@ -33,13 +33,13 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public UserDto updateUser(@PathVariable Integer userId,
+    public UserDto updateUser(@PathVariable int userId,
                               @RequestBody UserDto userDto) {
         return userService.updateUser(userId, userDto);
     }
 
     @GetMapping("/{userId}")
-    public UserDto getUser(@PathVariable Integer userId) {
+    public UserDto getUser(@PathVariable int userId) {
         return userService.getUserById(userId);
     }
 
@@ -50,7 +50,7 @@ public class UserController {
 
     @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUser(@PathVariable Integer userId) {
+    public void deleteUser(@PathVariable int userId) {
         userService.deleteUser(userId);
     }
 }

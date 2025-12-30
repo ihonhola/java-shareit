@@ -1,8 +1,6 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.exceptions.ConflictException;
-import ru.practicum.shareit.exceptions.NotFoundException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,11 +14,6 @@ public class InMemoryUserRepository {
     private final Map<String, Integer> emailToIdMap = new HashMap<>(); //для проверки уникальности email
 
     public User save(User user) {
-
-        if (emailToIdMap.containsKey(user.getEmail())) {
-           throw new ConflictException("Пользователь с email " + user.getEmail() + " уже существует");
-        }
-
         user.setId(getNextId());
         users.put(user.getId(), user);
         emailToIdMap.put(user.getEmail(), user.getId());
@@ -30,33 +23,10 @@ public class InMemoryUserRepository {
     public User update(User user) {
         Integer userId = user.getId();
 
-        if (userId == null || !users.containsKey(userId)) {
-            throw new NotFoundException("Пользователь с ID " + userId + " не найден");
-        }
-
         User existingUser = users.get(userId);
-        String newEmail = user.getEmail();
 
-        if (newEmail != null && !newEmail.isBlank()) {
-            String oldEmail = existingUser.getEmail();
-
-            // Если email изменился
-            if (!newEmail.equals(oldEmail)) {
-                // Проверяем уникальность
-                if (emailToIdMap.containsKey(newEmail)) {
-                    throw new ConflictException("Пользователь с email " + newEmail + " уже существует");
-                }
-
-                // Обновляем
-                emailToIdMap.remove(oldEmail);
-                emailToIdMap.put(newEmail, userId);
-                existingUser.setEmail(newEmail);
-            }
-        }
-
-        if (user.getName() != null) {
-            existingUser.setName(user.getName());
-        }
+        existingUser.setEmail(user.getEmail());
+        existingUser.setName(user.getName());
 
         users.put(userId, existingUser);
         return existingUser;
@@ -71,10 +41,9 @@ public class InMemoryUserRepository {
     }
 
     public void deleteById(Integer id) {
-        User user = users.get(id);
-        if (user != null) {
-            emailToIdMap.remove(user.getEmail());
-            users.remove(id);
+        User removedUser = users.remove(id);
+        if (removedUser != null) {
+            emailToIdMap.remove(removedUser.getEmail());
         }
     }
 

@@ -19,7 +19,7 @@ public class ItemServiceImpl implements ItemService {
     private final InMemoryUserRepository userRepository;
 
     @Override
-    public ItemDto createItem(ItemDto itemDto, Integer ownerId) {
+    public ItemDto createItem(ItemDto itemDto, int ownerId) {
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
@@ -31,7 +31,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto updateItem(Integer itemId, ItemDto itemDto, Integer ownerId) {
+    public ItemDto updateItem(int itemId, ItemDto itemDto, int ownerId) {
         Item existingItem = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
 
@@ -55,14 +55,14 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto getItemById(Integer itemId, Integer userId) {
+    public ItemDto getItemById(int itemId, int userId) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
         return ItemMapper.toItemDto(item);
     }
 
     @Override
-    public List<ItemDto> getAllItemsByOwner(Integer ownerId) {
+    public List<ItemDto> getAllItemsByOwner(int ownerId) {
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 

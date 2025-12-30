@@ -29,25 +29,25 @@ public class ItemController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ItemDto createItem(@Valid @RequestBody ItemDto itemDto,
-                              @RequestHeader("X-Sharer-User-Id") Integer ownerId) {
+                              @RequestHeader("X-Sharer-User-Id") int ownerId) {
         return itemService.createItem(itemDto, ownerId);
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto updateItem(@PathVariable Integer itemId,
+    public ItemDto updateItem(@PathVariable int itemId,
                               @RequestBody ItemDto itemDto,
-                              @RequestHeader("X-Sharer-User-Id") Integer ownerId) {
+                              @RequestHeader("X-Sharer-User-Id") int ownerId) {
         return itemService.updateItem(itemId, itemDto, ownerId);
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItem(@PathVariable Integer itemId,
-                           @RequestHeader("X-Sharer-User-Id") Integer userId) {
+    public ItemDto getItem(@PathVariable int itemId,
+                           @RequestHeader("X-Sharer-User-Id") int userId) {
         return itemService.getItemById(itemId, userId);
     }
 
     @GetMapping
-    public List<ItemDto> getAllItemsByOwner(@RequestHeader("X-Sharer-User-Id") Integer ownerId) {
+    public List<ItemDto> getAllItemsByOwner(@RequestHeader("X-Sharer-User-Id") int ownerId) {
         return itemService.getAllItemsByOwner(ownerId);
     }
 
