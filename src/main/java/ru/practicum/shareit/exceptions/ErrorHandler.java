@@ -1,7 +1,9 @@
 package ru.practicum.shareit.exceptions;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -47,5 +49,27 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public Map<String, String> handleAccessDeniedException(AccessDeniedException e) {
         return Map.of("error", e.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        log.warn("Ошибка валидации: {}", e.getMessage());
+        return Map.of("error", e.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(fieldError -> String.format("Поле '%s': %s",
+                        fieldError.getField(), fieldError.getDefaultMessage()))
+                .orElse("Ошибка валидации"));
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleConstraintViolationException(ConstraintViolationException e) {
+        log.warn("Ошибка валидации параметров: {}", e.getMessage());
+        return Map.of("error", e.getConstraintViolations().stream()
+                .findFirst()
+                .map(violation -> String.format("Параметр '%s': %s",
+                        violation.getPropertyPath(), violation.getMessage()))
+                .orElse("Ошибка валидации параметров"));
     }
 }

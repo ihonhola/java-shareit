@@ -21,21 +21,5 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 
     boolean existsByOwnerId(Integer ownerId);
 
-    /*List<Item> findAllByRequestId(Integer requestId);
-
-    List<Item> findAllByOwnerId(Integer ownerId);
-
-    @Query("SELECT i FROM Item i " +
-            "WHERE (LOWER(i.name) LIKE LOWER(CONCAT('%', ?1, '%')) " +
-            "OR LOWER(i.description) LIKE LOWER(CONCAT('%', ?1, '%'))) " +
-            "AND i.available = true")
-    List<Item> searchAvailableItems(String text, Pageable pageable);
-
-    List<Item> findAllByOwnerOrderById(User owner, Pageable pageable);
-
-    @Query("SELECT i FROM Item i " +
-            "WHERE i.owner.id = ?1 " +
-            "ORDER BY i.id")
-    List<Item> findAllByOwnerIdOrderById(Integer ownerId);
-    */
+    boolean existsByIdAndOwnerId(Integer id, Integer ownerId);
 }

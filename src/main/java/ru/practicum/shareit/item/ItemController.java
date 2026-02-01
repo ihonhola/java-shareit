@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.CommentRequestDto;
+import ru.practicum.shareit.item.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
 import java.util.List;
@@ -61,12 +62,12 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     @ResponseStatus(HttpStatus.CREATED)
-    public CommentDto addComment(
+    public CommentResponseDto addComment(
             @PathVariable Integer itemId,
-            @Valid @RequestBody CommentDto commentDto,
+            @Valid @RequestBody CommentRequestDto commentRequestDto,
             @RequestHeader("X-Sharer-User-Id") Integer userId) {
         log.info("Запрос на добавление комментария к вещи ID: {} от пользователя ID: {}",
                 itemId, userId);
-        return itemService.addComment(itemId, commentDto, userId);
+        return itemService.addComment(itemId, commentRequestDto, userId);
     }
 }

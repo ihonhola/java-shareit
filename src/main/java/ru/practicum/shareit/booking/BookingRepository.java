@@ -71,7 +71,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             "AND b.status != ?2 " +
             "AND b.start > ?3 " +
             "ORDER BY b.start ASC")
-    List<Booking> findAllByItemIdAndStatusNotAndStartAfterOrderByStartAsc(
+    List<Booking> findAllByItemIdAndStatusAndStartAfterOrderByStartAsc(
             Integer itemId, BookingStatus status, LocalDateTime currentTime);
 
     @Query("SELECT COUNT(b) > 0 FROM Booking b " +
@@ -81,4 +81,22 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             "AND b.status != 'REJECTED'")
     boolean existsByItemIdAndBookerIdAndEndBeforeAndStatusNotRejected(
             Integer itemId, Integer bookerId, LocalDateTime currentTime);
+
+    // Получаем все завершенные бронирования, отсортированные по дате окончания
+    @Query("SELECT b FROM Booking b " +
+            "WHERE b.item.id IN ?1 " +
+            "AND b.status = ?2 " +
+            "AND b.end < ?3 " +
+            "ORDER BY b.item.id, b.end DESC")
+    List<Booking> findAllCompletedBookingsForItems(
+            List<Integer> itemIds, BookingStatus status, LocalDateTime currentTime);
+
+    // Получаем все будущие бронирования, отсортированные по дате начала
+    @Query("SELECT b FROM Booking b " +
+            "WHERE b.item.id IN ?1 " +
+            "AND b.status = ?2 " +
+            "AND b.start > ?3 " +
+            "ORDER BY b.item.id, b.start ASC")
+    List<Booking> findAllFutureBookingsForItems(
+            List<Integer> itemIds, BookingStatus status, LocalDateTime currentTime);
 }

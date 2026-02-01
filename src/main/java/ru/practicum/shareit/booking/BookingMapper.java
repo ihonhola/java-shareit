@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
-import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingRequestDto;
+import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
@@ -8,32 +9,31 @@ import ru.practicum.shareit.user.UserMapper;
 
 public class BookingMapper {
 
-    public static BookingDto toBookingDto(Booking booking) {
+    public static BookingResponseDto toBookingResponseDto(Booking booking) {
         if (booking == null) {
             return null;
         }
-        BookingDto bookingDto = new BookingDto();
+        BookingResponseDto bookingResponseDto = new BookingResponseDto();
 
-        bookingDto.setId(booking.getId());
-        bookingDto.setStart(booking.getStart());
-        bookingDto.setEnd(booking.getEnd());
-        bookingDto.setItemId(booking.getItem().getId());
-        bookingDto.setBookerId(booking.getBooker().getId());
-        bookingDto.setStatus(booking.getStatus().name());
-        bookingDto.setItem(ItemMapper.toItemDto(booking.getItem()));
-        bookingDto.setBooker(UserMapper.toUserDto(booking.getBooker()));
+        bookingResponseDto.setId(booking.getId());
+        bookingResponseDto.setStart(booking.getStart());
+        bookingResponseDto.setEnd(booking.getEnd());
+        bookingResponseDto.setItemId(booking.getItem().getId());
+        bookingResponseDto.setBookerId(booking.getBooker().getId());
+        bookingResponseDto.setStatus(booking.getStatus().name());
+        bookingResponseDto.setItem(ItemMapper.toItemDto(booking.getItem()));
+        bookingResponseDto.setBooker(UserMapper.toUserDto(booking.getBooker()));
 
-        return bookingDto;
+        return bookingResponseDto;
     }
 
-    public static Booking toBooking(BookingDto bookingDto, Item item, User booker) {
-        if (bookingDto == null) {
+    public static Booking toBooking(BookingRequestDto bookingRequestDto, Item item, User booker) {
+        if (bookingRequestDto == null) {
             return null;
         }
         Booking booking = new Booking();
-        booking.setId(bookingDto.getId());
-        booking.setStart(bookingDto.getStart());
-        booking.setEnd(bookingDto.getEnd());
+        booking.setStart(bookingRequestDto.getStart());
+        booking.setEnd(bookingRequestDto.getEnd());
         booking.setItem(item);
         booking.setBooker(booker);
         booking.setStatus(BookingStatus.WAITING);

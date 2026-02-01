@@ -4,13 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.BookingStatus;
-import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
-import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.CommentRequestDto;
+import ru.practicum.shareit.item.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -103,11 +105,11 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
 
         // Получаем все бронирования для вещей владельца
-        Map<Integer, BookingDto> lastBookings = getLastBookings(itemIds);
-        Map<Integer, BookingDto> nextBookings = getNextBookings(itemIds);
+        Map<Integer, BookingResponseDto> lastBookings = getLastBookings(itemIds);
+        Map<Integer, BookingResponseDto> nextBookings = getNextBookings(itemIds);
 
         // Получаем все комментарии для вещей владельца
-        Map<Integer, List<CommentDto>> commentsByItem = getCommentsByItemIds(itemIds);
+        Map<Integer, List<CommentResponseDto>> commentsByItem = getCommentsByItemIds(itemIds);
 
         return items.stream()
                 .map(item -> {
@@ -133,7 +135,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public CommentDto addComment(Integer itemId, CommentDto commentDto, Integer authorId) {
+    public CommentResponseDto addComment(Integer itemId, CommentRequestDto commentRequestDto, Integer authorId) {
         // Проверяем существование вещи
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
@@ -148,7 +150,7 @@ public class ItemServiceImpl implements ItemService {
         }
 
         // Создаем комментарий
-        Comment comment = CommentMapper.toComment(commentDto, item, author);
+        Comment comment = CommentMapper.toComment(commentRequestDto, item, author);
         comment.setCreated(LocalDateTime.now());
         Comment savedComment = commentRepository.save(comment);
 
@@ -164,57 +166,78 @@ public class ItemServiceImpl implements ItemService {
         bookingRepository.findFirstByItemIdAndBookerIdAndEndBeforeAndStatus(
                         itemId, null, LocalDateTime.now(), BookingStatus.APPROVED)
                 .ifPresent(booking ->
-                        itemDto.setLastBooking(BookingMapper.toBookingDto(booking)));
+                        itemDto.setLastBooking(BookingMapper.toBookingResponseDto(booking)));
 
         // Получаем ближайшее следующее бронирование
-        bookingRepository.findAllByItemIdAndStatusNotAndStartAfterOrderByStartAsc(
-                        itemId, BookingStatus.REJECTED, LocalDateTime.now())
+        bookingRepository.findAllByItemIdAndStatusAndStartAfterOrderByStartAsc(
+                        itemId, BookingStatus.APPROVED, LocalDateTime.now())
                 .stream()
                 .findFirst()
                 .ifPresent(booking ->
-                        itemDto.setNextBooking(BookingMapper.toBookingDto(booking)));
+                        itemDto.setNextBooking(BookingMapper.toBookingResponseDto(booking)));
     }
 
-    private Map<Integer, BookingDto> getLastBookings(List<Integer> itemIds) {
-        Map<Integer, BookingDto> result = new HashMap<>();
+    private Map<Integer, BookingResponseDto> getLastBookings(List<Integer> itemIds) {
+        if (itemIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
 
-        for (Integer itemId : itemIds) {
-            bookingRepository.findFirstByItemIdAndBookerIdAndEndBeforeAndStatus(
-                            itemId, null, LocalDateTime.now(), BookingStatus.APPROVED)
-                    .ifPresent(booking ->
-                            result.put(itemId, BookingMapper.toBookingDto(booking)));
+        Map<Integer, BookingResponseDto> result = new HashMap<>();
+        List<Booking> allCompletedBookings = bookingRepository.findAllCompletedBookingsForItems(
+                itemIds, BookingStatus.APPROVED, LocalDateTime.now());
+
+        // Берем первое бронирование для каждого itemId (список отсортирован по убыванию end)
+        for (Booking booking : allCompletedBookings) {
+            Integer itemId = booking.getItem().getId();
+            if (!result.containsKey(itemId)) {
+                result.put(itemId, BookingMapper.toBookingResponseDto(booking));
+            }
         }
 
         return result;
     }
 
-    private Map<Integer, BookingDto> getNextBookings(List<Integer> itemIds) {
-        Map<Integer, BookingDto> result = new HashMap<>();
+    private Map<Integer, BookingResponseDto> getNextBookings(List<Integer> itemIds) {
+        if (itemIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
 
-        for (Integer itemId : itemIds) {
-            bookingRepository.findAllByItemIdAndStatusNotAndStartAfterOrderByStartAsc(
-                            itemId, BookingStatus.REJECTED, LocalDateTime.now())
-                    .stream()
-                    .findFirst()
-                    .ifPresent(booking ->
-                            result.put(itemId, BookingMapper.toBookingDto(booking)));
+        Map<Integer, BookingResponseDto> result = new HashMap<>();
+        List<Booking> allFutureBookings = bookingRepository.findAllFutureBookingsForItems(
+                itemIds, BookingStatus.APPROVED, LocalDateTime.now());
+
+        // Если количество найденных бронирований равно количеству itemIds,
+        // можно сразу заполнить мап без проверок containsKey
+        if (allFutureBookings.size() == itemIds.size()) {
+            for (Booking booking : allFutureBookings) {
+                result.put(booking.getItem().getId(),
+                        BookingMapper.toBookingResponseDto(booking));
+            }
+        } else {
+            // Берем первое бронирование для каждого itemId (список отсортирован по возрастанию start)
+            for (Booking booking : allFutureBookings) {
+                Integer itemId = booking.getItem().getId();
+                if (!result.containsKey(itemId)) {
+                    result.put(itemId, BookingMapper.toBookingResponseDto(booking));
+                }
+            }
         }
 
         return result;
     }
 
-    private List<CommentDto> getCommentsForItem(Integer itemId) {
+    private List<CommentResponseDto> getCommentsForItem(Integer itemId) {
         return commentRepository.findAllByItemId(itemId).stream()
                 .map(CommentMapper::toCommentDto)
                 .collect(Collectors.toList());
     }
 
-    private Map<Integer, List<CommentDto>> getCommentsByItemIds(List<Integer> itemIds) {
+    private Map<Integer, List<CommentResponseDto>> getCommentsByItemIds(List<Integer> itemIds) {
         if (itemIds.isEmpty()) {
             return Collections.emptyMap();
         }
 
-        Map<Integer, List<CommentDto>> result = new HashMap<>();
+        Map<Integer, List<CommentResponseDto>> result = new HashMap<>();
         List<Comment> comments = commentRepository.findAllByItemIdIn(itemIds);
 
         for (Comment comment : comments) {

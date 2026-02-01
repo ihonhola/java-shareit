@@ -16,7 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingRequestDto;
+import ru.practicum.shareit.booking.dto.BookingResponseDto;
 
 import java.util.List;
 
@@ -32,16 +33,16 @@ public class BookingController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public BookingDto createBooking(
-            @Valid @RequestBody BookingDto bookingDto,
+    public BookingResponseDto createBooking(
+            @Valid @RequestBody BookingRequestDto bookingRequestDto,
             @RequestHeader("X-Sharer-User-Id") Integer userId) {
 
         log.info("Запрос на создание бронирования от пользователя ID: {}", userId);
-        return bookingService.createBooking(bookingDto, userId);
+        return bookingService.createBooking(bookingRequestDto, userId);
     }
 
     @PatchMapping("/{bookingId}")
-    public BookingDto approveBooking(
+    public BookingResponseDto approveBooking(
             @PathVariable Integer bookingId,
             @RequestParam boolean approved,
             @RequestHeader("X-Sharer-User-Id") Integer userId) {
@@ -52,7 +53,7 @@ public class BookingController {
     }
 
     @GetMapping("/{bookingId}")
-    public BookingDto getBooking(
+    public BookingResponseDto getBooking(
             @PathVariable Integer bookingId,
             @RequestHeader("X-Sharer-User-Id") Integer userId) {
 
@@ -61,26 +62,26 @@ public class BookingController {
     }
 
     @GetMapping
-    public List<BookingDto> getUserBookings(
+    public List<BookingResponseDto> getUserBookings(
             @RequestHeader("X-Sharer-User-Id") Integer userId,
             @RequestParam(defaultValue = "ALL") String state,
             @PositiveOrZero @RequestParam(defaultValue = "0") int from,
             @Positive @RequestParam(defaultValue = "10") int size) {
 
         log.info("Запрос на получение бронирований пользователя ID: {} в состоянии: {}", userId, state);
-        BookingStatus bookingState = BookingStatus.from(state);
+        BookingState bookingState = BookingState.from(state);
         return bookingService.getUserBookings(userId, bookingState, from, size);
     }
 
     @GetMapping("/owner")
-    public List<BookingDto> getOwnerBookings(
+    public List<BookingResponseDto> getOwnerBookings(
             @RequestHeader("X-Sharer-User-Id") Integer ownerId,
             @RequestParam(defaultValue = "ALL") String state,
             @PositiveOrZero @RequestParam(defaultValue = "0") int from,
             @Positive @RequestParam(defaultValue = "10") int size) {
 
         log.info("Запрос на получение бронирований владельца ID: {} в состоянии: {}", ownerId, state);
-        BookingStatus bookingState = BookingStatus.from(state);
+        BookingState bookingState = BookingState.from(state);
         return bookingService.getOwnerBookings(ownerId, bookingState, from, size);
     }
 }
