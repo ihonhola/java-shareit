@@ -51,8 +51,8 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     @Query("SELECT CASE WHEN COUNT(b) > 0 THEN false ELSE true END " +
             "FROM Booking b " +
             "WHERE b.item.id = ?1 " +
-            "AND b.status = 'APPROVED' " +
-            "AND (?2 < b.end) AND (?3 > b.start)")
+            "AND b.status IN ('APPROVED', 'WAITING') " +
+            "AND NOT (b.end <= ?2 OR b.start >= ?3)")
     boolean isItemAvailable(
             Integer itemId, LocalDateTime start, LocalDateTime end);
 

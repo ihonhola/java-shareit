@@ -43,7 +43,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
 
         // Проверяем, что пользователь не владелец вещи
-        if (itemRepository.existsByIdAndOwnerId(bookingRequestDto.getItemId(), userId)) {
+        if (item.getOwner().getId().equals(userId)) {
             throw new ValidationException("Владелец не может бронировать свою вещь");
         }
 
