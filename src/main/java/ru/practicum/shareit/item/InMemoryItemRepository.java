@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Deprecated
 @Repository
 public class InMemoryItemRepository {
     private final Map<Integer, Item> items = new HashMap<>();
