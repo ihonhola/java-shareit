@@ -44,13 +44,11 @@ class BookItemRequestDtoJsonTest {
 
     @Test
     void testDeserialization() throws Exception {
-        String content = """
-                {
-                    "itemId": 2,
-                    "start": "2026-04-01T11:00:00",
-                    "end": "2026-04-02T13:00:00"
-                }
-                """;
+        String content = "{\n" +
+                "    \"itemId\": 2,\n" +
+                "    \"start\": \"2026-04-01T11:00:00\",\n" +
+                "    \"end\": \"2026-04-02T13:00:00\"\n" +
+                "}";
         BookItemRequestDto dto = json.parseObject(content);
         assertThat(dto.getItemId()).isEqualTo(2);
         assertThat(dto.getStart()).isEqualTo("2026-04-01T11:00:00");

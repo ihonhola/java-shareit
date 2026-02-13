@@ -97,30 +97,28 @@ class ItemDtoJsonTest {
 
     @Test
     void testDeserialization() throws Exception {
-        String content = """
-                {
-                    "id": 2,
-                    "name": "Молот",
-                    "description": "Принадлежал инженеру Тору",
-                    "available": true,
-                    "requestId": 7,
-                    "lastBooking": {
-                        "id": 20,
-                        "start": "2026-03-01T10:00:00",
-                        "end": "2026-03-02T12:00:00",
-                        "status": "APPROVED"
-                    },
-                    "nextBooking": null,
-                    "comments": [
-                        {
-                            "id": 101,
-                            "text": "Nice",
-                            "authorName": "Jane",
-                            "created": "2026-03-01T15:30:00"
-                        }
-                    ]
-                }
-                """;
+        String content = "{\n" +
+                "    \"id\": 2,\n" +
+                "    \"name\": \"Молот\",\n" +
+                "    \"description\": \"Принадлежал инженеру Тору\",\n" +
+                "    \"available\": true,\n" +
+                "    \"requestId\": 7,\n" +
+                "    \"lastBooking\": {\n" +
+                "        \"id\": 20,\n" +
+                "        \"start\": \"2026-03-01T10:00:00\",\n" +
+                "        \"end\": \"2026-03-02T12:00:00\",\n" +
+                "        \"status\": \"APPROVED\"\n" +
+                "    },\n" +
+                "    \"nextBooking\": null,\n" +
+                "    \"comments\": [\n" +
+                "        {\n" +
+                "            \"id\": 101,\n" +
+                "            \"text\": \"Nice\",\n" +
+                "            \"authorName\": \"Jane\",\n" +
+                "            \"created\": \"2026-03-01T15:30:00\"\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}";
 
         ItemDto dto = json.parseObject(content);
 
