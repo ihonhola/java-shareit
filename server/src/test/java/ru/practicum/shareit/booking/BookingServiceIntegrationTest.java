@@ -395,4 +395,117 @@ class BookingServiceIntegrationTest {
         assertThrows(ValidationException.class, () ->
                 bookingService.getOwnerBookings(owner.getId(), BookingState.ALL, 0, 10));
     }
+
+    @Test
+    void getUserBookings_withCurrentState_shouldReturnCurrentBookings() {
+        UserDto owner = createOwner();
+        UserDto booker = createBooker();
+        ItemDto item = createItem(owner);
+
+        LocalDateTime start = LocalDateTime.now().minusHours(1);
+        LocalDateTime end = LocalDateTime.now().plusHours(1);
+        BookingRequestDto request = new BookingRequestDto();
+        request.setItemId(item.getId());
+        request.setStart(start);
+        request.setEnd(end);
+        bookingService.createBooking(request, booker.getId());
+
+        List<BookingResponseDto> bookings = bookingService.getUserBookings(booker.getId(), BookingState.CURRENT, 0, 10);
+        assertEquals(1, bookings.size());
+    }
+
+    @Test
+    void getUserBookings_withPastState_shouldReturnPastBookings() {
+        UserDto owner = createOwner();
+        UserDto booker = createBooker();
+        ItemDto item = createItem(owner);
+
+        LocalDateTime start = LocalDateTime.now().minusDays(2);
+        LocalDateTime end = LocalDateTime.now().minusDays(1);
+        BookingRequestDto request = new BookingRequestDto();
+        request.setItemId(item.getId());
+        request.setStart(start);
+        request.setEnd(end);
+        bookingService.createBooking(request, booker.getId());
+
+        List<BookingResponseDto> bookings = bookingService.getUserBookings(booker.getId(),
+                BookingState.PAST, 0, 10);
+        assertEquals(1, bookings.size());
+    }
+
+    @Test
+    void getUserBookings_withFutureState_shouldReturnFutureBookings() {
+        UserDto owner = createOwner();
+        UserDto booker = createBooker();
+        ItemDto item = createItem(owner);
+
+        LocalDateTime start = LocalDateTime.now().plusDays(1);
+        LocalDateTime end = LocalDateTime.now().plusDays(2);
+        BookingRequestDto request = new BookingRequestDto();
+        request.setItemId(item.getId());
+        request.setStart(start);
+        request.setEnd(end);
+        bookingService.createBooking(request, booker.getId());
+
+        List<BookingResponseDto> bookings = bookingService.getUserBookings(booker.getId(),
+                BookingState.FUTURE, 0, 10);
+        assertEquals(1, bookings.size());
+    }
+
+    @Test
+    void getOwnerBookings_withCurrentState_shouldReturnCurrentBookings() {
+        UserDto owner = createOwner();
+        UserDto booker = createBooker();
+        ItemDto item = createItem(owner);
+
+        LocalDateTime start = LocalDateTime.now().minusHours(1);
+        LocalDateTime end = LocalDateTime.now().plusHours(1);
+        BookingRequestDto request = new BookingRequestDto();
+        request.setItemId(item.getId());
+        request.setStart(start);
+        request.setEnd(end);
+        bookingService.createBooking(request, booker.getId());
+
+        List<BookingResponseDto> bookings = bookingService.getOwnerBookings(owner.getId(),
+                BookingState.CURRENT, 0, 10);
+        assertEquals(1, bookings.size());
+    }
+
+    @Test
+    void getOwnerBookings_withPastState_shouldReturnPastBookings() {
+        UserDto owner = createOwner();
+        UserDto booker = createBooker();
+        ItemDto item = createItem(owner);
+
+        LocalDateTime start = LocalDateTime.now().minusDays(2);
+        LocalDateTime end = LocalDateTime.now().minusDays(1);
+        BookingRequestDto request = new BookingRequestDto();
+        request.setItemId(item.getId());
+        request.setStart(start);
+        request.setEnd(end);
+        bookingService.createBooking(request, booker.getId());
+
+        List<BookingResponseDto> bookings = bookingService.getOwnerBookings(owner.getId(),
+                BookingState.PAST, 0, 10);
+        assertEquals(1, bookings.size());
+    }
+
+    @Test
+    void getOwnerBookings_withFutureState_shouldReturnFutureBookings() {
+        UserDto owner = createOwner();
+        UserDto booker = createBooker();
+        ItemDto item = createItem(owner);
+
+        LocalDateTime start = LocalDateTime.now().plusDays(1);
+        LocalDateTime end = LocalDateTime.now().plusDays(2);
+        BookingRequestDto request = new BookingRequestDto();
+        request.setItemId(item.getId());
+        request.setStart(start);
+        request.setEnd(end);
+        bookingService.createBooking(request, booker.getId());
+
+        List<BookingResponseDto> bookings = bookingService.getOwnerBookings(owner.getId(),
+                BookingState.FUTURE, 0, 10);
+        assertEquals(1, bookings.size());
+    }
 }

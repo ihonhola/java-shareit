@@ -69,7 +69,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     // Метод для поиска следующего бронирования
     @Query("SELECT b FROM Booking b " +
             "WHERE b.item.id = ?1 " +
-            "AND b.status != ?2 " +
+            "AND b.status = ?2 " +
             "AND b.start > ?3 " +
             "ORDER BY b.start ASC")
     List<Booking> findAllByItemIdAndStatusAndStartAfterOrderByStartAsc(

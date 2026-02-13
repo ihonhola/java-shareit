@@ -6,7 +6,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.BookingService;
 import ru.practicum.shareit.booking.BookingStatus;
+import ru.practicum.shareit.booking.dto.BookingRequestDto;
+import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.dto.CommentRequestDto;
@@ -23,7 +26,12 @@ import ru.practicum.shareit.booking.model.Booking;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -38,6 +46,9 @@ class ItemServiceIntegrationTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private BookingService bookingService;
 
     @Autowired
     private BookingRepository bookingRepository;
@@ -334,5 +345,98 @@ class ItemServiceIntegrationTest {
 
         var result = itemService.searchAvailableItems("инженер");
         assertEquals(2, result.size());
+    }
+
+    @Test
+    void getAllItemsByOwner_withMultipleBookings_shouldSetLastAndNext() {
+        // Создаём владельца
+        UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
+
+        // Создаём двух букеров
+        UserDto booker1 = userService.createUser(new UserDto(null, "Booker1", "booker1@mail.com"));
+        UserDto booker2 = userService.createUser(new UserDto(null, "Booker2", "booker2@mail.com"));
+
+        // Создаём вещь
+        ItemDto item = itemService.createItem(
+                new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину",
+                        true, null, null, null, null),
+                owner.getId()
+        );
+
+        // Создаём прошлое бронирование (APPROVED)
+        LocalDateTime pastStart = LocalDateTime.now().minusDays(5);
+        LocalDateTime pastEnd = LocalDateTime.now().minusDays(4);
+        BookingRequestDto pastRequest = new BookingRequestDto();
+        pastRequest.setItemId(item.getId());
+        pastRequest.setStart(pastStart);
+        pastRequest.setEnd(pastEnd);
+        BookingResponseDto pastBooking = bookingService.createBooking(pastRequest, booker1.getId());
+        bookingService.approveBooking(pastBooking.getId(), owner.getId(), true);
+
+        // Создаём будущее бронирование (APPROVED)
+        LocalDateTime futureStart = LocalDateTime.now().plusDays(1);
+        LocalDateTime futureEnd = LocalDateTime.now().plusDays(2);
+        BookingRequestDto futureRequest = new BookingRequestDto();
+        futureRequest.setItemId(item.getId());
+        futureRequest.setStart(futureStart);
+        futureRequest.setEnd(futureEnd);
+        BookingResponseDto futureBooking = bookingService.createBooking(futureRequest, booker2.getId());
+        bookingService.approveBooking(futureBooking.getId(), owner.getId(), true);
+
+        // Получаем все вещи владельца
+        List<ItemDto> items = itemService.getAllItemsByOwner(owner.getId());
+        assertEquals(1, items.size());
+        ItemDto result = items.get(0);
+
+        // Проверяем last и next бронирования
+        assertNotNull(result.getLastBooking());
+        assertNotNull(result.getNextBooking());
+        assertEquals(pastBooking.getId(), result.getLastBooking().getId());
+        assertEquals(futureBooking.getId(), result.getNextBooking().getId());
+    }
+
+    @Test
+    void getItemById_asOwner_withMultipleBookings_shouldSetLastAndNext() {
+        // Создаём владельца
+        UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
+
+        // Создаём букеров
+        UserDto booker1 = userService.createUser(new UserDto(null, "Booker1", "booker1@mail.com"));
+        UserDto booker2 = userService.createUser(new UserDto(null, "Booker2", "booker2@mail.com"));
+
+        // Создаём вещь
+        ItemDto item = itemService.createItem(
+                new ItemDto(null, "Гиперболоид", "Принадлежал инеженру Гарину",
+                        true, null, null, null, null),
+                owner.getId()
+        );
+
+        // Прошлое бронирование
+        LocalDateTime pastStart = LocalDateTime.now().minusDays(5);
+        LocalDateTime pastEnd = LocalDateTime.now().minusDays(4);
+        BookingRequestDto pastRequest = new BookingRequestDto();
+        pastRequest.setItemId(item.getId());
+        pastRequest.setStart(pastStart);
+        pastRequest.setEnd(pastEnd);
+        BookingResponseDto pastBooking = bookingService.createBooking(pastRequest, booker1.getId());
+        bookingService.approveBooking(pastBooking.getId(), owner.getId(), true);
+
+        // Будущее бронирование
+        LocalDateTime futureStart = LocalDateTime.now().plusDays(1);
+        LocalDateTime futureEnd = LocalDateTime.now().plusDays(2);
+        BookingRequestDto futureRequest = new BookingRequestDto();
+        futureRequest.setItemId(item.getId());
+        futureRequest.setStart(futureStart);
+        futureRequest.setEnd(futureEnd);
+        BookingResponseDto futureBooking = bookingService.createBooking(futureRequest, booker2.getId());
+        bookingService.approveBooking(futureBooking.getId(), owner.getId(), true);
+
+        // Получаем вещь по ID от имени владельца
+        ItemDto result = itemService.getItemById(item.getId(), owner.getId());
+
+        assertNotNull(result.getLastBooking());
+        assertNotNull(result.getNextBooking());
+        assertEquals(pastBooking.getId(), result.getLastBooking().getId());
+        assertEquals(futureBooking.getId(), result.getNextBooking().getId());
     }
 }
