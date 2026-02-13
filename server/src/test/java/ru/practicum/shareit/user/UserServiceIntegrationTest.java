@@ -9,6 +9,9 @@ import ru.practicum.shareit.exceptions.ConflictException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -41,6 +44,41 @@ class UserServiceIntegrationTest {
     }
 
     @Test
+    void updateUser_shouldUpdateFields() {
+        UserDto created = userService.createUser(new UserDto(null, "Old", "old@mail.com"));
+        UserDto updateDto = new UserDto(null, "New", "new@mail.com");
+        UserDto updated = userService.updateUser(created.getId(), updateDto);
+
+        assertEquals("New", updated.getName());
+        assertEquals("new@mail.com", updated.getEmail());
+    }
+
+    @Test
+    void updateUser_partialUpdate_shouldUpdateOnlyProvidedFields() {
+        UserDto created = userService.createUser(new UserDto(null, "Old", "old@mail.com"));
+        UserDto updateDto = new UserDto(null, "New", null);
+        UserDto updated = userService.updateUser(created.getId(), updateDto);
+
+        assertEquals("New", updated.getName());
+        assertEquals("old@mail.com", updated.getEmail());
+    }
+
+    @Test
+    void updateUser_conflictEmail_shouldThrowConflict() {
+        UserDto user1 = userService.createUser(new UserDto(null, "User1", "user1@mail.com"));
+        UserDto user2 = userService.createUser(new UserDto(null, "User2", "user2@mail.com"));
+
+        UserDto updateDto = new UserDto(null, "User2Updated", "user1@mail.com");
+        assertThrows(ConflictException.class, () -> userService.updateUser(user2.getId(), updateDto));
+    }
+
+    @Test
+    void updateUser_notFound_shouldThrowNotFound() {
+        UserDto updateDto = new UserDto(null, "New", "new@mail.com");
+        assertThrows(NotFoundException.class, () -> userService.updateUser(999, updateDto));
+    }
+
+    @Test
     void getUserById_existingId_shouldReturnUser() {
         UserDto created = userService.createUser(new UserDto(null, "Jane", "jane@mail.com"));
         UserDto found = userService.getUserById(created.getId());
@@ -52,5 +90,28 @@ class UserServiceIntegrationTest {
     @Test
     void getUserById_notExisting_shouldThrowNotFound() {
         assertThrows(NotFoundException.class, () -> userService.getUserById(9999));
+    }
+
+    @Test
+    void getAllUsers_shouldReturnList() {
+        userService.createUser(new UserDto(null, "A", "a@mail.com"));
+        userService.createUser(new UserDto(null, "B", "b@mail.com"));
+
+        List<UserDto> all = userService.getAllUsers();
+        assertEquals(2, all.size());
+    }
+
+    @Test
+    void deleteUser_shouldRemoveUser() {
+        UserDto created = userService.createUser(new UserDto(null, "ToDelete", "delete@mail.com"));
+        userService.deleteUser(created.getId());
+
+        assertThrows(NotFoundException.class, () -> userService.getUserById(created.getId()));
+    }
+
+    @Test
+    void deleteUser_notExisting_shouldNotThrow() {
+        // delete не выбрасывает исключение, если пользователя нет
+        assertDoesNotThrow(() -> userService.deleteUser(9999));
     }
 }
