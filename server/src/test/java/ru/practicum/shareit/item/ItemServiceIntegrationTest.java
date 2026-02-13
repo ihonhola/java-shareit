@@ -51,12 +51,12 @@ class ItemServiceIntegrationTest {
     @Test
     void createItem_shouldSaveAndReturnItem() {
         UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
-        ItemDto itemDto = new ItemDto(null, "Drill", "Power tool", true, null,
-                null, null, null);
+        ItemDto itemDto = new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину",
+                true, null, null, null, null);
         ItemDto saved = itemService.createItem(itemDto, owner.getId());
 
         assertNotNull(saved.getId());
-        assertEquals("Drill", saved.getName());
+        assertEquals("Гиперболоид", saved.getName());
         assertTrue(saved.getAvailable());
     }
 
@@ -66,14 +66,15 @@ class ItemServiceIntegrationTest {
         UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
 
         RequestDto requestDto = new RequestDto();
-        requestDto.setDescription("Need drill");
+        requestDto.setDescription("Нужен гиперболоид");
         ItemRequest request = new ItemRequest();
         request.setDescription(requestDto.getDescription());
         request.setRequestor(userRepository.findById(requestor.getId()).orElseThrow());
         request.setCreated(LocalDateTime.now());
         request = requestRepository.save(request);
 
-        ItemDto itemDto = new ItemDto(null, "Drill", "Power tool", true, request.getId(), null, null, null);
+        ItemDto itemDto = new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину",
+                true, request.getId(), null, null, null);
         ItemDto saved = itemService.createItem(itemDto, owner.getId());
 
         assertEquals(request.getId(), saved.getRequestId());
@@ -81,14 +82,16 @@ class ItemServiceIntegrationTest {
 
     @Test
     void createItem_ownerNotFound_shouldThrowNotFound() {
-        ItemDto itemDto = new ItemDto(null, "Drill", "Power tool", true, null, null, null, null);
+        ItemDto itemDto = new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину",
+                true, null, null, null, null);
         assertThrows(NotFoundException.class, () -> itemService.createItem(itemDto, 999));
     }
 
     @Test
     void createItem_requestNotFound_shouldThrowNotFound() {
         UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
-        ItemDto itemDto = new ItemDto(null, "Drill", "Power tool", true, 999, null, null, null);
+        ItemDto itemDto = new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину",
+                true, 999, null, null, null);
         assertThrows(NotFoundException.class, () -> itemService.createItem(itemDto, owner.getId()));
     }
 
@@ -96,14 +99,15 @@ class ItemServiceIntegrationTest {
     void createItem_ownerEqualsRequestor_shouldThrowValidation() {
         UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
         RequestDto requestDto = new RequestDto();
-        requestDto.setDescription("Need drill");
+        requestDto.setDescription("Нужен гиперболоид");
         ItemRequest request = new ItemRequest();
         request.setDescription(requestDto.getDescription());
         request.setRequestor(userRepository.findById(owner.getId()).orElseThrow());
         request.setCreated(LocalDateTime.now());
         request = requestRepository.save(request);
 
-        ItemDto itemDto = new ItemDto(null, "Drill", "Power tool", true, request.getId(), null, null, null);
+        ItemDto itemDto = new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину",
+                true, request.getId(), null, null, null);
         assertThrows(ValidationException.class, () -> itemService.createItem(itemDto, owner.getId()));
     }
 
@@ -111,15 +115,17 @@ class ItemServiceIntegrationTest {
     void updateItem_shouldUpdateFields() {
         UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
         ItemDto created = itemService.createItem(
-                new ItemDto(null, "Drill", "Power tool", true, null, null, null, null),
+                new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину",
+                        true, null, null, null, null),
                 owner.getId()
         );
 
-        ItemDto update = new ItemDto(null, "Hammer", "Hand tool", false, null, null, null, null);
+        ItemDto update = new ItemDto(null, "Молот", "Принадлежал инженеру Тору",
+                false, null, null, null, null);
         ItemDto updated = itemService.updateItem(created.getId(), update, owner.getId());
 
-        assertEquals("Hammer", updated.getName());
-        assertEquals("Hand tool", updated.getDescription());
+        assertEquals("Молот", updated.getName());
+        assertEquals("Принадлежал инженеру Тору", updated.getDescription());
         assertFalse(updated.getAvailable());
     }
 
@@ -127,22 +133,25 @@ class ItemServiceIntegrationTest {
     void updateItem_partialUpdate_shouldUpdateOnlyProvided() {
         UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
         ItemDto created = itemService.createItem(
-                new ItemDto(null, "Drill", "Power tool", true, null, null, null, null),
+                new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину",
+                        true, null, null, null, null),
                 owner.getId()
         );
 
-        ItemDto update = new ItemDto(null, "Hammer", null, null, null, null, null, null);
+        ItemDto update = new ItemDto(null, "Молот", null, null,
+                null, null, null, null);
         ItemDto updated = itemService.updateItem(created.getId(), update, owner.getId());
 
-        assertEquals("Hammer", updated.getName());
-        assertEquals("Power tool", updated.getDescription());
+        assertEquals("Молот", updated.getName());
+        assertEquals("Принадлежал инженеру Гарину", updated.getDescription());
         assertTrue(updated.getAvailable());
     }
 
     @Test
     void updateItem_notFound_shouldThrowNotFound() {
         UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
-        ItemDto update = new ItemDto(null, "Hammer", null, null, null, null, null, null);
+        ItemDto update = new ItemDto(null, "Молот", null, null, null,
+                null, null, null);
         assertThrows(NotFoundException.class, () -> itemService.updateItem(999, update, owner.getId()));
     }
 
@@ -151,11 +160,13 @@ class ItemServiceIntegrationTest {
         UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
         UserDto other = userService.createUser(new UserDto(null, "Other", "other@mail.com"));
         ItemDto created = itemService.createItem(
-                new ItemDto(null, "Drill", "Power tool", true, null, null, null, null),
+                new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину",
+                        true, null, null, null, null),
                 owner.getId()
         );
 
-        ItemDto update = new ItemDto(null, "Hammer", null, null, null, null, null, null);
+        ItemDto update = new ItemDto(null, "Молот", null, null, null,
+                null, null, null);
         assertThrows(NotFoundException.class, () -> itemService.updateItem(created.getId(), update, other.getId()));
     }
 
@@ -164,7 +175,8 @@ class ItemServiceIntegrationTest {
         UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
         UserDto other = userService.createUser(new UserDto(null, "Other", "other@mail.com"));
         ItemDto created = itemService.createItem(
-                new ItemDto(null, "Drill", "Power tool", true, null, null, null, null),
+                new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину",
+                        true, null, null, null, null),
                 owner.getId()
         );
 
@@ -182,13 +194,14 @@ class ItemServiceIntegrationTest {
     void getAllItemsByOwner_shouldReturnListWithBookings() {
         UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
         ItemDto item1 = itemService.createItem(
-                new ItemDto(null, "Drill", "Power tool", true, null,
+                new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину",
+                        true, null,
                         null, null, null),
                 owner.getId()
         );
         ItemDto item2 = itemService.createItem(
-                new ItemDto(null, "Hammer", "Hand tool", true, null,
-                        null, null, null),
+                new ItemDto(null, "Молот", "Принадлежал инженеру Тору", true,
+                        null, null, null, null),
                 owner.getId()
         );
 
@@ -205,20 +218,20 @@ class ItemServiceIntegrationTest {
     void searchAvailableItems_shouldReturnMatching() {
         UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
         itemService.createItem(
-                new ItemDto(null, "Drill", "Power tool", true,
-                        null, null, null, null),
+                new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину",
+                        true, null, null, null, null),
                 owner.getId()
         );
         itemService.createItem(
-                new ItemDto(null, "Hammer", "Hand tool", true,
+                new ItemDto(null, "Молот", "Принадлежал инженеру Тору", true,
                         null, null, null, null),
                 owner.getId()
         );
 
-        List<ItemDto> result = itemService.searchAvailableItems("tool");
+        List<ItemDto> result = itemService.searchAvailableItems("инженер");
         assertEquals(2, result.size());
 
-        result = itemService.searchAvailableItems("drill");
+        result = itemService.searchAvailableItems("гиперболоид");
         assertEquals(1, result.size());
     }
 
@@ -233,7 +246,7 @@ class ItemServiceIntegrationTest {
         UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
         UserDto booker = userService.createUser(new UserDto(null, "Booker", "booker@mail.com"));
         ItemDto item = itemService.createItem(
-                new ItemDto(null, "Drill", "Power tool", true,
+                new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину", true,
                         null, null, null, null),
                 owner.getId()
         );
@@ -263,19 +276,22 @@ class ItemServiceIntegrationTest {
         UserDto booker = userService.createUser(new UserDto(null, "Booker", "booker@mail.com"));
         CommentRequestDto commentRequest = new CommentRequestDto();
         commentRequest.setText("Great!");
-        assertThrows(NotFoundException.class, () -> itemService.addComment(999, commentRequest, booker.getId()));
+        assertThrows(NotFoundException.class, () ->
+                itemService.addComment(999, commentRequest, booker.getId()));
     }
 
     @Test
     void addComment_userNotFound_shouldThrowNotFound() {
         UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
         ItemDto item = itemService.createItem(
-                new ItemDto(null, "Drill", "Power tool", true, null, null, null, null),
+                new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину",
+                        true, null, null, null, null),
                 owner.getId()
         );
         CommentRequestDto commentRequest = new CommentRequestDto();
         commentRequest.setText("Great!");
-        assertThrows(NotFoundException.class, () -> itemService.addComment(item.getId(), commentRequest, 999));
+        assertThrows(NotFoundException.class, () ->
+                itemService.addComment(item.getId(), commentRequest, 999));
     }
 
     @Test
@@ -283,13 +299,15 @@ class ItemServiceIntegrationTest {
         UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
         UserDto other = userService.createUser(new UserDto(null, "Other", "other@mail.com"));
         ItemDto item = itemService.createItem(
-                new ItemDto(null, "Drill", "Power tool", true, null, null, null, null),
+                new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину",
+                        true, null, null, null, null),
                 owner.getId()
         );
 
         CommentRequestDto commentRequest = new CommentRequestDto();
         commentRequest.setText("Great!");
-        assertThrows(ValidationException.class, () -> itemService.addComment(item.getId(), commentRequest, other.getId()));
+        assertThrows(ValidationException.class, () ->
+                itemService.addComment(item.getId(), commentRequest, other.getId()));
     }
 
     @Test

@@ -49,7 +49,7 @@ class ItemRequestServiceIntegrationTest {
     @Test
     void createRequest_userNotFound_shouldThrowNotFound() {
         RequestDto dto = new RequestDto();
-        dto.setDescription("Need a drill");
+        dto.setDescription("Нужен гиперболоид");
         assertThrows(NotFoundException.class, () -> requestService.createRequest(dto, 999));
     }
 
@@ -76,12 +76,12 @@ class ItemRequestServiceIntegrationTest {
         UserDto user2 = userService.createUser(new UserDto(null, "User2", "user2@mail.com"));
 
         RequestDto dto = new RequestDto();
-        dto.setDescription("Need a drill");
+        dto.setDescription("Нужен гиперболоид");
         requestService.createRequest(dto, user1.getId());
 
         List<RequestResponseDto> requests = requestService.getAllOtherUsersRequests(user2.getId(), 0, 10);
         assertEquals(1, requests.size());
-        assertEquals("Need a drill", requests.get(0).getDescription());
+        assertEquals("Нужен гиперболоид", requests.get(0).getDescription());
     }
 
     @Test
@@ -95,18 +95,18 @@ class ItemRequestServiceIntegrationTest {
         UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
 
         RequestDto dto = new RequestDto();
-        dto.setDescription("Need a drill");
+        dto.setDescription("Нужен гиперболоид");
         RequestResponseDto created = requestService.createRequest(dto, requestor.getId());
 
         // Создаём вещь в ответ на запрос
-        ItemDto itemDto = new ItemDto(null, "Drill", "Power tool", true,
+        ItemDto itemDto = new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину", true,
                 created.getId(), null, null, null);
         itemService.createItem(itemDto, owner.getId());
 
         RequestResponseDto found = requestService.getRequestById(created.getId(), owner.getId());
         assertEquals(created.getId(), found.getId());
         assertEquals(1, found.getItems().size());
-        assertEquals("Drill", found.getItems().get(0).getName());
+        assertEquals("Гиперболоид", found.getItems().get(0).getName());
     }
 
     @Test
@@ -119,7 +119,7 @@ class ItemRequestServiceIntegrationTest {
     void getRequestById_userNotFound_shouldThrowNotFound() {
         UserDto requestor = userService.createUser(new UserDto(null, "Requestor", "req@mail.com"));
         RequestDto dto = new RequestDto();
-        dto.setDescription("Need a drill");
+        dto.setDescription("Нужен гиперболоид");
         RequestResponseDto created = requestService.createRequest(dto, requestor.getId());
 
         assertThrows(NotFoundException.class, () -> requestService.getRequestById(created.getId(), 999));

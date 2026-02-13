@@ -7,14 +7,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exceptions.ConflictException;
 import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.item.ItemService;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -23,6 +22,9 @@ class UserServiceIntegrationTest {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ItemService itemService;
 
     @Test
     void createUser_shouldSaveAndReturnUser() {
@@ -113,5 +115,12 @@ class UserServiceIntegrationTest {
     void deleteUser_notExisting_shouldNotThrow() {
         // delete не выбрасывает исключение, если пользователя нет
         assertDoesNotThrow(() -> userService.deleteUser(9999));
+    }
+
+    @Test
+    void getAllItemsByOwner_noItems_shouldReturnEmptyList() {
+        UserDto owner = userService.createUser(new UserDto(null, "Owner", "owner@mail.com"));
+        List<ItemDto> items = itemService.getAllItemsByOwner(owner.getId());
+        assertTrue(items.isEmpty());
     }
 }

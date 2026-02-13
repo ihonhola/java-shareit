@@ -50,7 +50,7 @@ class BookingServiceIntegrationTest {
 
     private ItemDto createItem(UserDto owner) {
         return itemService.createItem(
-                new ItemDto(null, "Drill", "Power tool",
+                new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину",
                         true, null, null, null, null),
                 owner.getId()
         );
@@ -82,7 +82,7 @@ class BookingServiceIntegrationTest {
         UserDto owner = createOwner();
         UserDto booker = createBooker();
         ItemDto item = itemService.createItem(
-                new ItemDto(null, "Drill", "Power tool", false, null,
+                new ItemDto(null, "Гиперболоид", "Принадлежал инженеру Гарину", false, null,
                         null, null, null),
                 owner.getId()
         );
