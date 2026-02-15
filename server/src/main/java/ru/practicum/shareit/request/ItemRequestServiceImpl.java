@@ -9,9 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
+import ru.practicum.shareit.item.ItemMapper;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.ItemRepository;
-import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.request.dto.RequestResponseDto;
 import ru.practicum.shareit.request.model.ItemRequest;
@@ -114,10 +115,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         return responseDto;
     }
 
-    private List<ItemRequestDto> findItemsByRequestId(Integer requestId) {
+    private List<ItemDto> findItemsByRequestId(Integer requestId) {
         List<Item> items = itemRepository.findAllByRequestId(requestId);
         return items.stream()
-                .map(ItemRequestMapper::toItemForRequestDto)
+                .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
 }

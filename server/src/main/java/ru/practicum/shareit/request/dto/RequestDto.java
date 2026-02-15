@@ -4,5 +4,8 @@ import lombok.Data;
 
 @Data
 public class RequestDto {
+
+    private Integer id;
+
     private String description;
 }

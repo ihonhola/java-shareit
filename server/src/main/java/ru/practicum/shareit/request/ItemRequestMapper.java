@@ -1,7 +1,6 @@
 package ru.practicum.shareit.request;
 
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.request.dto.RequestResponseDto;
 import ru.practicum.shareit.request.model.ItemRequest;
@@ -34,27 +33,11 @@ public class ItemRequestMapper {
         // Если есть связанные вещи, преобразуем их
         if (itemRequest.getItems() != null && !itemRequest.getItems().isEmpty()) {
             dto.setItems(itemRequest.getItems().stream()
-                    .map(ItemRequestMapper::toItemForRequestDto)
+                    .map(ItemMapper::toItemDto)
                     .collect(Collectors.toList()));
         } else {
             dto.setItems(Collections.emptyList());
         }
-
-        return dto;
-    }
-
-    public static ItemRequestDto toItemForRequestDto(Item item) {
-        if (item == null) {
-            return null;
-        }
-
-        ItemRequestDto dto = new ItemRequestDto();
-        dto.setId(item.getId());
-        dto.setName(item.getName());
-        dto.setDescription(item.getDescription());
-        dto.setAvailable(item.getAvailable());
-        dto.setOwnerId(item.getOwner().getId());
-        dto.setRequestId(item.getRequest() != null ? item.getRequest().getId() : null);
 
         return dto;
     }

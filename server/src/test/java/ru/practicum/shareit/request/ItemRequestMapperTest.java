@@ -2,7 +2,7 @@ package ru.practicum.shareit.request;
 
 import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.request.dto.RequestResponseDto;
 import ru.practicum.shareit.request.model.ItemRequest;
@@ -64,12 +64,11 @@ class ItemRequestMapperTest {
         assertNotNull(dto.getItems());
         assertEquals(1, dto.getItems().size());
 
-        ItemRequestDto itemDto = dto.getItems().get(0);
+        ItemDto itemDto = dto.getItems().get(0);
         assertEquals(10, itemDto.getId());
         assertEquals("Гиперболоид", itemDto.getName());
         assertEquals("Принадлежал инженеру Гарину", itemDto.getDescription());
         assertTrue(itemDto.getAvailable());
-        assertEquals(1, itemDto.getOwnerId());
         assertEquals(1, itemDto.getRequestId());
     }
 
@@ -94,37 +93,5 @@ class ItemRequestMapperTest {
     @Test
     void toRequestResponseDto_shouldReturnNull_whenItemRequestNull() {
         assertNull(ItemRequestMapper.toRequestResponseDto(null));
-    }
-
-    @Test
-    void toItemForRequestDto_shouldMapCorrectly() {
-        Item item = new Item();
-        item.setId(5);
-        item.setName("Молот");
-        item.setDescription("Принадлежал инженеру Тору");
-        item.setAvailable(true);
-
-        User owner = new User();
-        owner.setId(2);
-        item.setOwner(owner);
-
-        ItemRequest request = new ItemRequest();
-        request.setId(3);
-        item.setRequest(request);
-
-        ItemRequestDto dto = ItemRequestMapper.toItemForRequestDto(item);
-
-        assertNotNull(dto);
-        assertEquals(5, dto.getId());
-        assertEquals("Молот", dto.getName());
-        assertEquals("Принадлежал инженеру Тору", dto.getDescription());
-        assertTrue(dto.getAvailable());
-        assertEquals(2, dto.getOwnerId());
-        assertEquals(3, dto.getRequestId());
-    }
-
-    @Test
-    void toItemForRequestDto_shouldReturnNull_whenItemNull() {
-        assertNull(ItemRequestMapper.toItemForRequestDto(null));
     }
 }
